@@ -16,8 +16,14 @@ class XMLElement extends XML {
 		super(XMLNodeType.ELEMENT, qname);
 	}
 
+	public XMLElement(String qname, String value) {
+		super(XMLNodeType.ELEMENT, qname);
+		nodeValue = value;
+	}
+
 	@Override
 	public XML get(String qname) {
+		if (children == null) throw new XMLException("no such elemets or attritubes <" + qname + ">");
 		XML element = children.get(qname);
 		if (element == null) throw new XMLException("no such elemets or attritubes <" + qname + ">");
 		return element;
@@ -25,23 +31,20 @@ class XMLElement extends XML {
 
 	@Override
 	public XML opt(String qname) {
+		if (children == null) return XML.NULL_NODE;
 		XML xml = children.get(qname);
-		if (xml == null) xml = XML.NULL_NODE;
-		return xml;
+		return xml == null ? XML.NULL_NODE : xml;
 	}
 
 	@Override
 	public Map<String, XML> asMap(String key) {
-		if (key == null || key.length() == 0 || key.equals("@")) throw new NullPointerException("key is null or empty");
+		if (key == null || key.length() == 0 || key.equals("@"))
+			throw new NullPointerException("key is null or empty");
 
 		return Collections.<String, XML> singletonMap(opt(key).optString(), this);
 	}
 
-	void appendAttritube(String qname, String nodeValue) {
-		children.put("@" + qname, new XMLValue(XMLNodeType.ATTRITUBE, qname, nodeValue));
-	}
-
-	void appendElement(XML xml) {
+	void appendChild(XML xml) {
 		if (children == null) children = new LinkedHashMap<String, XML>();
 		String qname = xml.getNodeName();
 		XML child = children.get(qname);
@@ -65,9 +68,11 @@ class XMLElement extends XML {
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("<" + getNodeName());
-		for (Map.Entry<String, XML> entry : children.entrySet()) {
-			if (entry.getKey().startsWith("@")) {
-				sb.append(" " + entry.getKey().substring(1) + "=\"" + entry.getValue().toString() + "\"");
+		if (children != null) {
+			for (Map.Entry<String, XML> entry : children.entrySet()) {
+				if (entry.getKey().startsWith("@")) {
+					sb.append(" " + entry.getKey().substring(1) + "=\"" + entry.getValue().toString() + "\"");
+				}
 			}
 		}
 		sb.append(">");
@@ -89,8 +94,8 @@ class XMLElement extends XML {
 	public List<XML> attritubes() {
 		if (children == null || children.isEmpty()) return super.attritubes();
 		List<XML> list = new ArrayList<XML>();
-		for (Map.Entry<String, XML> entry : children.entrySet()) {
-			if (entry.getKey().startsWith("@")) list.add(entry.getValue());
+		for (XML v : children.values()) {
+			if (v.getNodeType() == XMLNodeType.ATTRITUBE) list.add(v);
 		}
 		return list;
 	}
@@ -99,8 +104,20 @@ class XMLElement extends XML {
 	public List<XML> children() {
 		if (children == null || children.isEmpty()) return super.children();
 		List<XML> list = new ArrayList<XML>();
-		for (Map.Entry<String, XML> entry : children.entrySet()) {
-			if (!entry.getKey().startsWith("@")) list.add(entry.getValue());
+		for (XML v : children.values()) {
+			if (v.getNodeType() == XMLNodeType.ELEMENT) list.add(v);
+			switch (v.getNodeType()) {
+				case ELEMENT:
+					list.add(v);
+					break;
+				case ELEMENT_LIST:
+					for (XML x : v) {
+						list.add(x);
+					}
+					break;
+				default:
+					break;
+			}
 		}
 		return list;
 	}

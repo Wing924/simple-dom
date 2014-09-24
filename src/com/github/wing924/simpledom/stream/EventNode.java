@@ -1,4 +1,4 @@
-package com.github.wing924.simpledom.frontend;
+package com.github.wing924.simpledom.stream;
 
 import java.util.AbstractMap;
 import java.util.ArrayList;
@@ -8,7 +8,7 @@ import java.util.Map.Entry;
 
 import org.xml.sax.Attributes;
 
-public class XMLToken {
+public class EventNode {
 
 	public enum TokenType {
 		START_TAG, END_TAG, TEXT
@@ -18,12 +18,12 @@ public class XMLToken {
 	private String							value	= "";
 	private List<Map.Entry<String, String>>	attributes;
 
-	public XMLToken(TokenType type, String value) {
+	public EventNode(TokenType type, String value) {
 		this.type = type;
 		this.value = value;
 	}
 
-	public XMLToken(TokenType type, String value, Attributes attributes) {
+	public EventNode(TokenType type, String value, Attributes attributes) {
 		this.type = type;
 		this.value = value;
 		if (attributes != null && attributes.getLength() > 0) {

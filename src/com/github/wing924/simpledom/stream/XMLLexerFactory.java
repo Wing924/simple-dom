@@ -1,4 +1,4 @@
-package com.github.wing924.simpledom.frontend;
+package com.github.wing924.simpledom.stream;
 
 public class XMLLexerFactory {
 	XMLLexer getLexer() {

@@ -1,4 +1,4 @@
-package com.github.wing924.simpledom.frontend.sax;
+package com.github.wing924.simpledom.stream;
 
 import java.io.File;
 import java.io.IOException;
@@ -14,51 +14,49 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 import com.github.wing924.simpledom.core.XMLException;
-import com.github.wing924.simpledom.frontend.XMLLexer;
-import com.github.wing924.simpledom.frontend.XMLToken;
-import com.github.wing924.simpledom.frontend.XMLToken.TokenType;
+import com.github.wing924.simpledom.stream.EventNode.TokenType;
 
 public class SaxXMLLexer implements XMLLexer {
 
 	@Override
-	public LinkedList<XMLToken> parse(File f) throws IOException {
+	public EventReader parse(File f) throws IOException {
 		try {
 			SAXHander hander = new SAXHander();
 			getParser().parse(f, hander);
-			return hander.getTokens();
+			return new IteratorEventReader(hander.getTokens().iterator());
 		} catch (SAXException e) {
 			throw new XMLException(e);
 		}
 	}
 
 	@Override
-	public LinkedList<XMLToken> parse(InputSource is) throws IOException {
+	public EventReader parse(InputSource is) throws IOException {
 		try {
 			SAXHander hander = new SAXHander();
 			getParser().parse(is, hander);
-			return hander.getTokens();
+			return new IteratorEventReader(hander.getTokens().iterator());
 		} catch (SAXException e) {
 			throw new XMLException(e);
 		}
 	}
 
 	@Override
-	public LinkedList<XMLToken> parse(InputStream is) throws IOException {
+	public EventReader parse(InputStream is) throws IOException {
 		try {
 			SAXHander hander = new SAXHander();
 			getParser().parse(is, hander);
-			return hander.getTokens();
+			return new IteratorEventReader(hander.getTokens().iterator());
 		} catch (SAXException e) {
 			throw new XMLException(e);
 		}
 	}
 
 	@Override
-	public LinkedList<XMLToken> parse(String uri) throws IOException {
+	public EventReader parse(String uri) throws IOException {
 		try {
 			SAXHander hander = new SAXHander();
 			getParser().parse(uri, hander);
-			return hander.getTokens();
+			return new IteratorEventReader(hander.getTokens().iterator());
 		} catch (SAXException e) {
 			throw new XMLException(e);
 		}
@@ -76,9 +74,9 @@ public class SaxXMLLexer implements XMLLexer {
 
 	private class SAXHander extends DefaultHandler {
 
-		private LinkedList<XMLToken>	tokens	= new LinkedList<XMLToken>();
+		private LinkedList<EventNode>	tokens	= new LinkedList<EventNode>();
 
-		public final LinkedList<XMLToken> getTokens() {
+		public final LinkedList<EventNode> getTokens() {
 			return tokens;
 		}
 
@@ -92,19 +90,18 @@ public class SaxXMLLexer implements XMLLexer {
 				}
 			}
 			if (!emptyStr) {
-				tokens.add(new XMLToken(TokenType.TEXT, new String(ch, start, length)));
+				tokens.add(new EventNode(TokenType.TEXT, new String(ch, start, length)));
 			}
 		}
 
 		@Override
 		public void endElement(String uri, String localName, String qName) throws SAXException {
-			tokens.add(new XMLToken(TokenType.END_TAG, qName));
+			tokens.add(new EventNode(TokenType.END_TAG, qName));
 		}
 
 		@Override
-		public void startElement(String uri, String localName, String qName,
-				Attributes attributes) throws SAXException {
-			tokens.add(new XMLToken(TokenType.START_TAG, qName, attributes));
+		public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+			tokens.add(new EventNode(TokenType.START_TAG, qName, attributes));
 		}
 	}
 }
