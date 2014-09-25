@@ -1,17 +1,22 @@
 package com.github.wing924.simpledom.core;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
 class XMLElementList extends XML {
 
-	private List<XML>	list	= new LinkedList<XML>();
+	private List<XML>	list	= new ArrayList<XML>();
 
 	public XMLElementList(String qname) {
 		super(XMLNodeType.ELEMENT_LIST, qname);
+	}
+
+	@Override
+	public boolean isLeafNode() {
+		return list.get(0).isLeafNode();
 	}
 
 	@Override
@@ -25,15 +30,27 @@ class XMLElementList extends XML {
 	}
 
 	@Override
-	public Map<String, XML> asMap(String key) {
-		if (key == null || key.length() == 0 || key.equals("@")) throw new NullPointerException("key is null or empty");
-		boolean isAttr = key.charAt(0) == '@';
-		if (isAttr) key = key.substring(1);
+	public int length() {
+		return list.size();
+	}
 
+	@Override
+	public XML get(int index) {
+		return list.get(index);
+	}
+
+	@Override
+	public XML opt(int index) {
+		if (index < 0 || index >= length()) return NULL_NODE;
+		return list.get(index);
+	}
+
+	@Override
+	public Map<String, XML> asMap(String key) {
 		Map<String, XML> map = new LinkedHashMap<String, XML>();
 		for (XML xml : list) {
 			XML value = xml.opt(key);
-			map.put(value.optString(""), xml);
+			map.put(value.asString(""), xml);
 		}
 		return map;
 	}
@@ -41,6 +58,15 @@ class XMLElementList extends XML {
 	@Override
 	public Iterator<XML> iterator() {
 		return list.iterator();
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		for (XML xml : list) {
+			sb.append(xml.toString());
+		}
+		return sb.toString();
 	}
 
 	void appendToList(XML xml) {

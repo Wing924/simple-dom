@@ -28,4 +28,9 @@ public class XMLAttribute extends XML {
 	protected String getValue() {
 		return value;
 	}
+	
+	@Override
+	public boolean isLeafNode() {
+		return true;
+	}
 }

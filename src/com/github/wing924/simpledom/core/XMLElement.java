@@ -9,7 +9,8 @@ import java.util.Map;
 
 class XMLElement extends XML {
 
-	private Map<String, XML>	children;
+	private Map<String, XML>	attributes;
+	private Map<String, XML>	elements;
 	private String				nodeValue;
 
 	public XMLElement(String qname) {
@@ -22,64 +23,60 @@ class XMLElement extends XML {
 	}
 
 	@Override
+	public boolean isLeafNode() {
+		return nodeValue != null;
+	}
+
+	@Override
 	public XML get(String qname) {
-		if (children == null) throw new XMLException("no such elemets or attritubes <" + qname + ">");
-		XML element = children.get(qname);
-		if (element == null) throw new XMLException("no such elemets or attritubes <" + qname + ">");
-		return element;
+		XML xml = getChild(qname);
+		if (xml == null) throw new XMLException("no such element or attritube: " + qname);
+		return xml;
 	}
 
 	@Override
 	public XML opt(String qname) {
-		if (children == null) return XML.NULL_NODE;
-		XML xml = children.get(qname);
-		return xml == null ? XML.NULL_NODE : xml;
+		XML xml = getChild(qname);
+		if (xml == null) return NULL_NODE;
+		return xml;
+	}
+
+	@Override
+	public boolean has(String qname) {
+		return getChild(qname) != null;
+	}
+
+	private XML getChild(String qname) {
+		if (qname == null) throw new NullPointerException("qname nust not be null or empty String.");
+		if (qname.length() == 0) throw new IllegalArgumentException("qname must not be empty String.");
+		if (qname.charAt(0) == '@') {
+			if (qname.length() <= 1) throw new IllegalArgumentException("qname must not be '@'.");
+			return attributes == null ? null : attributes.get(qname.substring(1));
+		}
+		return elements == null ? null : elements.get(qname);
 	}
 
 	@Override
 	public Map<String, XML> asMap(String key) {
-		if (key == null || key.length() == 0 || key.equals("@"))
-			throw new NullPointerException("key is null or empty");
-
-		return Collections.<String, XML> singletonMap(opt(key).optString(), this);
-	}
-
-	void appendChild(XML xml) {
-		if (children == null) children = new LinkedHashMap<String, XML>();
-		String qname = xml.getNodeName();
-		XML child = children.get(qname);
-		if (child == null) {
-			children.put(qname, xml);
-		} else if (child.getNodeType() == XMLNodeType.ELEMENT_LIST) {
-			((XMLElementList) child).appendToList(xml);
-		} else {
-			XMLElementList xmllist = new XMLElementList(qname);
-			xmllist.appendToList(child);
-			xmllist.appendToList(xml);
-			children.put(qname, xmllist);
-		}
-	}
-
-	void setNodeValue(String string) {
-		nodeValue = string;
+		return Collections.<String, XML> singletonMap(opt(key).asString(""), this);
 	}
 
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("<" + getNodeName());
-		if (children != null) {
-			for (Map.Entry<String, XML> entry : children.entrySet()) {
-				if (entry.getKey().startsWith("@")) {
-					sb.append(" " + entry.getKey().substring(1) + "=\"" + entry.getValue().toString() + "\"");
-				}
+		if (attributes != null) {
+			for (Map.Entry<String, XML> entry : attributes.entrySet()) {
+				sb.append(" " + entry.getKey() + "=\"" + entry.getValue().toString() + "\"");
 			}
 		}
 		sb.append(">");
-		for (Map.Entry<String, XML> entry : children.entrySet()) {
-			if (!entry.getKey().startsWith("@")) {
+		if (elements != null) {
+			for (Map.Entry<String, XML> entry : elements.entrySet()) {
 				sb.append(entry.getValue().toString());
 			}
+		} else {
+			sb.append(nodeValue);
 		}
 		sb.append("</" + getNodeName() + ">");
 		return sb.toString();
@@ -92,20 +89,19 @@ class XMLElement extends XML {
 
 	@Override
 	public List<XML> attritubes() {
-		if (children == null || children.isEmpty()) return super.attritubes();
+		if (attributes == null || attributes.isEmpty()) return super.attritubes();
 		List<XML> list = new ArrayList<XML>();
-		for (XML v : children.values()) {
-			if (v.getNodeType() == XMLNodeType.ATTRITUBE) list.add(v);
+		for (XML v : attributes.values()) {
+			list.add(v);
 		}
 		return list;
 	}
 
 	@Override
 	public List<XML> children() {
-		if (children == null || children.isEmpty()) return super.children();
+		if (elements == null || elements.isEmpty()) return super.children();
 		List<XML> list = new ArrayList<XML>();
-		for (XML v : children.values()) {
-			if (v.getNodeType() == XMLNodeType.ELEMENT) list.add(v);
+		for (XML v : elements.values()) {
 			switch (v.getNodeType()) {
 				case ELEMENT:
 					list.add(v);
@@ -125,5 +121,34 @@ class XMLElement extends XML {
 	@Override
 	protected String getValue() {
 		return nodeValue;
+	}
+
+	// internal use
+
+	void appendChild(XML xml) {
+		if (xml.isAttribute()) {
+			if (attributes == null) attributes = new LinkedHashMap<String, XML>();
+			attributes.put(xml.getNodeName(), xml);
+		} else {
+			if (nodeValue != null) throw new IllegalStateException("only leaf node can contain text");
+			if (elements == null) elements = new LinkedHashMap<String, XML>();
+			String qname = xml.getNodeName();
+			XML child = elements.get(qname);
+			if (child == null) {
+				elements.put(qname, xml);
+			} else if (child.getNodeType() == XMLNodeType.ELEMENT_LIST) {
+				((XMLElementList) child).appendToList(xml);
+			} else {
+				XMLElementList xmllist = new XMLElementList(qname);
+				xmllist.appendToList(child);
+				xmllist.appendToList(xml);
+				elements.put(qname, xmllist);
+			}
+		}
+	}
+
+	void setNodeValue(String string) {
+		if (elements != null) throw new IllegalStateException("only leaf node can contain text");
+		nodeValue = string;
 	}
 }

@@ -9,7 +9,6 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.xml.sax.Attributes;
-import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
@@ -23,17 +22,6 @@ public class SaxXMLLexer implements XMLLexer {
 		try {
 			SAXHander hander = new SAXHander();
 			getParser().parse(f, hander);
-			return new IteratorEventReader(hander.getTokens().iterator());
-		} catch (SAXException e) {
-			throw new XMLException(e);
-		}
-	}
-
-	@Override
-	public EventReader parse(InputSource is) throws IOException {
-		try {
-			SAXHander hander = new SAXHander();
-			getParser().parse(is, hander);
 			return new IteratorEventReader(hander.getTokens().iterator());
 		} catch (SAXException e) {
 			throw new XMLException(e);

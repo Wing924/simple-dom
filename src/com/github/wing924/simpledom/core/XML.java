@@ -22,20 +22,20 @@ import java.util.Map;
  * <td>補足</td>
  * </tr>
  * <tr>
- * <td>getAttritube / getElement</td>
+ * <td>get</td>
  * <td>ノードの属性/子ノード (ない場合はエラー)</td>
  * <td>最初のノードの属性/子ノード (ない場合はエラー)</td>
  * <td>エラー</td>
  * <td>エラー</td>
- * <td></td>
+ * <td>属性の場合は"@" + (名前)。例：@id</td>
  * </tr>
  * <tr>
- * <td>optAttritube / optElement</td>
+ * <td>opt</td>
  * <td>ノードの属性/子ノード (ない場合はNULL_NODE)</td>
  * <td>最初のノードの属性/子ノード (ない場合はNULL_NODE)</td>
  * <td>NULL_NODE</td>
  * <td>NULL_NODE</td>
- * <td></td>
+ * <td>属性の場合は"@" + (名前)。例：@id</td>
  * </tr>
  * <tr>
  * <td>asMap</td>
@@ -50,8 +50,7 @@ import java.util.Map;
  * <td>最初のノードが葉ノードのみ値、それ以外はエラー</td>
  * <td>値</td>
  * <td>エラー</td>
- * <td>変換出来ない場合はエラー</td>
- * </tr>
+ * <td>変換出来ない場合はエラー</td> </tr>
  * <tr>
  * <td>optXXX (XXXは型)</td>
  * <td>葉ノードのみ値、それ以外はnullHack</td>
@@ -140,12 +139,46 @@ public abstract class XML implements Iterable<XML> {
 		return nodeType == XMLNodeType.NULL;
 	}
 
+	public boolean isAttribute() {
+		return nodeType == XMLNodeType.ATTRITUBE;
+	}
+
+	public boolean isElement() {
+		return nodeType == XMLNodeType.ELEMENT;
+	}
+
+	public boolean isElementList() {
+		return nodeType == XMLNodeType.ELEMENT_LIST;
+	}
+
+	public boolean isLeafNode() {
+		return false;
+	}
+
 	public XML get(String qname) {
 		throw new UnsupportedOperationException("className = " + getClass().getSimpleName());
 	}
 
 	public XML opt(String qname) {
 		return NULL_NODE;
+	}
+
+	public boolean has(String qname) {
+		return false;
+	}
+
+	public int length() {
+		return 1;
+	}
+
+	public XML get(int index) {
+		if (index != 0) throw new ArrayIndexOutOfBoundsException();
+		return this;
+	}
+
+	public XML opt(int index) {
+		if (index != 0) return NULL_NODE;
+		return this;
 	}
 
 	@Override
@@ -163,19 +196,28 @@ public abstract class XML implements Iterable<XML> {
 
 	/**
 	 * ELEMENT_LISTのみ有用
+	 * 
 	 * <pre>
 	 * &lt;names&gt;
 	 *   &lt;name lang="ja"&gt;雲&lt;/name&gt;
 	 *   &lt;name lang="en"&gt;cloud&lt;/name&gt;
 	 * &lt;/names&gt;
 	 * </pre>
+	 * 
 	 * を変換すると
 	 * {"ja" -> "雲", "en" -> "cloud"}
+	 * 
 	 * @param key
 	 * @return
 	 */
 	public Map<String, XML> asMap(String key) {
 		throw new UnsupportedOperationException();
+	}
+
+	public String asRawString() {
+		String value = getValue();
+		if (value == null) throw new NullPointerException();
+		return value;
 	}
 
 	public String asString() {
@@ -228,22 +270,14 @@ public abstract class XML implements Iterable<XML> {
 		return Enum.valueOf(clazz, asString());
 	}
 
-	public String optString() {
-		return optString("");
-	}
-
-	public String optString(String nullHack) {
+	public String asString(String nullHack) {
 		String s = getValue();
 		if (s == null) return nullHack;
 		return s;
 	}
 
-	public byte optByte() {
-		return optByte((byte) 0);
-	}
-
-	public byte optByte(byte nullHack) {
-		String s = optString(NULL_HACK_STRING);
+	public byte asByte(byte nullHack) {
+		String s = asString(NULL_HACK_STRING);
 		if (s == NULL_HACK_STRING) return nullHack;
 		try {
 			return Byte.parseByte(s);
@@ -252,12 +286,8 @@ public abstract class XML implements Iterable<XML> {
 		}
 	}
 
-	public short optShort() {
-		return optShort((short) 0);
-	}
-
-	public short optShort(short nullHack) {
-		String s = optString(NULL_HACK_STRING);
+	public short asShort(short nullHack) {
+		String s = asString(NULL_HACK_STRING);
 		if (s == NULL_HACK_STRING) return nullHack;
 		try {
 			return Short.parseShort(s);
@@ -266,12 +296,8 @@ public abstract class XML implements Iterable<XML> {
 		}
 	}
 
-	public int optInteger() {
-		return optInteger(0);
-	}
-
-	public int optInteger(int nullHack) {
-		String s = optString(NULL_HACK_STRING);
+	public int asInteger(int nullHack) {
+		String s = asString(NULL_HACK_STRING);
 		if (s == NULL_HACK_STRING) return nullHack;
 		try {
 			return Integer.parseInt(s);
@@ -280,12 +306,8 @@ public abstract class XML implements Iterable<XML> {
 		}
 	}
 
-	public long optLong() {
-		return optLong(0L);
-	}
-
-	public long optLong(long nullHack) {
-		String s = optString(NULL_HACK_STRING);
+	public long asLong(long nullHack) {
+		String s = asString(NULL_HACK_STRING);
 		if (s == NULL_HACK_STRING) return nullHack;
 		try {
 			return Long.parseLong(s);
@@ -294,12 +316,8 @@ public abstract class XML implements Iterable<XML> {
 		}
 	}
 
-	public float optFloat() {
-		return optFloat(0.0f);
-	}
-
-	public float optFloat(float nullHack) {
-		String s = optString(NULL_HACK_STRING);
+	public float asFloat(float nullHack) {
+		String s = asString(NULL_HACK_STRING);
 		if (s == NULL_HACK_STRING) return nullHack;
 		try {
 			return Float.parseFloat(s);
@@ -308,12 +326,8 @@ public abstract class XML implements Iterable<XML> {
 		}
 	}
 
-	public double optDouble() {
-		return optDouble(0.0);
-	}
-
-	public double optDouble(double nullHack) {
-		String s = optString(NULL_HACK_STRING);
+	public double asDouble(double nullHack) {
+		String s = asString(NULL_HACK_STRING);
 		if (s == NULL_HACK_STRING) return nullHack;
 		try {
 			return Double.parseDouble(s);
@@ -322,12 +336,8 @@ public abstract class XML implements Iterable<XML> {
 		}
 	}
 
-	public boolean optBoolean() {
-		return optBoolean(false);
-	}
-
-	public boolean optBoolean(boolean nullHack) {
-		String s = optString(NULL_HACK_STRING);
+	public boolean asBoolean(boolean nullHack) {
+		String s = asString(NULL_HACK_STRING);
 		if (s == NULL_HACK_STRING) return nullHack;
 		try {
 			return Boolean.parseBoolean(s);
@@ -336,20 +346,12 @@ public abstract class XML implements Iterable<XML> {
 		}
 	}
 
-	public Date optDate() {
-		return optDate((Date) null);
+	public Date asDate(Date nullHack) {
+		return asDate(DateFormat.getDateInstance(), nullHack);
 	}
 
-	public Date optDate(Date nullHack) {
-		return optDate(DateFormat.getDateInstance());
-	}
-
-	public Date optDate(DateFormat dateFormat) {
-		return optDate(dateFormat, null);
-	}
-
-	public Date optDate(DateFormat dateFormat, Date nullHack) {
-		String s = optString(NULL_HACK_STRING);
+	public Date asDate(DateFormat dateFormat, Date nullHack) {
+		String s = asString(NULL_HACK_STRING);
 		if (s == NULL_HACK_STRING) return nullHack;
 		try {
 			return dateFormat.parse(s);
@@ -358,12 +360,8 @@ public abstract class XML implements Iterable<XML> {
 		}
 	}
 
-	public Date optDate(String dateFormat) {
-		return optDate(dateFormat, null);
-	}
-
-	public Date optDate(String dateFormat, Date nullHack) {
-		String s = optString(NULL_HACK_STRING);
+	public Date asDate(String dateFormat, Date nullHack) {
+		String s = asString(NULL_HACK_STRING);
 		if (s == NULL_HACK_STRING) return nullHack;
 		try {
 			return new SimpleDateFormat(dateFormat, Locale.US).parse(asString());
@@ -372,8 +370,8 @@ public abstract class XML implements Iterable<XML> {
 		}
 	}
 
-	public <T extends Enum<T>> T optEnum(Class<T> clazz, T nullHack) {
-		String s = optString(NULL_HACK_STRING);
+	public <T extends Enum<T>> T asEnum(Class<T> clazz, T nullHack) {
+		String s = asString(NULL_HACK_STRING);
 		if (s == NULL_HACK_STRING) return nullHack;
 		try {
 			T o = Enum.valueOf(clazz, s);
