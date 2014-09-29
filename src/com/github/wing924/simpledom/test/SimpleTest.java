@@ -1,16 +1,16 @@
 package com.github.wing924.simpledom.test;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
-import static org.junit.Assert.*;
-
 import org.junit.Test;
 
-import com.github.wing924.simpledom.core.XML;
-import com.github.wing924.simpledom.core.XMLBuilder;
-import com.github.wing924.simpledom.core.XMLBuilderFactory;
-import com.github.wing924.simpledom.stream.SaxXMLLexer;
+import com.github.wing924.simpledom.core.SNode;
+import com.github.wing924.simpledom.core.SimpleDomParser;
+import com.github.wing924.simpledom.stream.SaxLexer;
 
 public class SimpleTest {
 
@@ -26,11 +26,7 @@ public class SimpleTest {
 
 	@Test
 	public void test() throws IOException {
-		XMLBuilderFactory factory = new XMLBuilderFactory();
-		factory.setXMLLexer(new SaxXMLLexer());
-		XMLBuilder builder = factory.createXmlBuilder();
-		builder.setInput(new ByteArrayInputStream(XML_STR.getBytes()));
-		XML xml = builder.parse();
+		SNode xml = new SimpleDomParser().parse(new SaxLexer().lex(new ByteArrayInputStream(XML_STR.getBytes())));
 		assertNotNull(xml);
 		System.out.println(xml);
 		assertEquals(1, xml.get("item").get("@id").asInteger());

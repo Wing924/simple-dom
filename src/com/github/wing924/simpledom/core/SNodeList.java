@@ -6,27 +6,32 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-class XMLElementList extends XML {
+class SNodeList extends SNode {
 
-	private List<XML>	list	= new ArrayList<XML>();
+	private List<SNode>	list	= new ArrayList<SNode>();
 
-	public XMLElementList(String qname) {
-		super(XMLNodeType.ELEMENT_LIST, qname);
+	public SNodeList() {
+		super(NodeType.ELEMENT_LIST);
+	}
+
+	@Override
+	public String getNodeName() {
+		return getFirst().getNodeName();
 	}
 
 	@Override
 	public boolean isLeafNode() {
-		return list.get(0).isLeafNode();
+		return getFirst().isLeafNode();
 	}
 
 	@Override
-	public XML get(String qname) {
+	public SNode get(String qname) {
 		return getFirst().get(qname);
 	}
 
 	@Override
-	public XML opt(String qname) {
-		return getFirst().opt(qname);
+	public SNode opt(String qname) {
+		return optFirst().opt(qname);
 	}
 
 	@Override
@@ -35,55 +40,61 @@ class XMLElementList extends XML {
 	}
 
 	@Override
-	public XML get(int index) {
+	public SNode get(int index) {
 		return list.get(index);
 	}
 
 	@Override
-	public XML opt(int index) {
+	public SNode opt(int index) {
 		if (index < 0 || index >= length()) return NULL_NODE;
 		return list.get(index);
 	}
 
 	@Override
-	public Map<String, XML> asMap(String key) {
-		Map<String, XML> map = new LinkedHashMap<String, XML>();
-		for (XML xml : list) {
-			XML value = xml.opt(key);
+	public Map<String, SNode> asMap(String key) {
+		Map<String, SNode> map = new LinkedHashMap<String, SNode>();
+		for (SNode xml : list) {
+			SNode value = xml.opt(key);
 			map.put(value.asString(""), xml);
 		}
 		return map;
 	}
 
 	@Override
-	public Iterator<XML> iterator() {
+	public Iterator<SNode> iterator() {
 		return list.iterator();
 	}
 
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		for (XML xml : list) {
+		for (SNode xml : list) {
 			sb.append(xml.toString());
 		}
 		return sb.toString();
 	}
 
-	void appendToList(XML xml) {
+	void appendToList(SNode xml) {
 		list.add(xml);
 	}
 
-	private XML getFirst() {
+	private SNode getFirst() {
+		if (list.isEmpty()) throw new NullPointerException("empty node list");
+		return list.get(0);
+	}
+	
+	private SNode optFirst() {
+		if(list.isEmpty()) return NULL_NODE;
 		return list.get(0);
 	}
 
 	@Override
-	public List<XML> children() {
+	public List<SNode> children() {
 		return getFirst().children();
 	}
 
 	@Override
-	public List<XML> attritubes() {
+	public List<SNode> attritubes() {
 		return getFirst().attritubes();
 	}
 

@@ -52,18 +52,18 @@ public class EventNode {
 	public String toString() {
 		switch (type) {
 			case END_TAG:
-				return "XMLToken [END TAG] </" + value + ">";
+				return "[END TAG  ] </" + value + ">";
 			case START_TAG:
-				if (attributes == null) return "XMLToken [START TAG] <" + value + ">";
+				if (attributes == null) return "[START TAG] <" + value + ">";
 				StringBuilder sb = new StringBuilder();
-				sb.append("XMLToken [START TAG] <" + value);
+				sb.append("[START TAG] <" + value);
 				for (Map.Entry<String, String> entry : attributes) {
 					sb.append(" " + entry.getKey() + "='" + entry.getValue() + "'");
 				}
 				sb.append(">");
 				return sb.toString();
 			case TEXT:
-				return "XMLToken [TEXT] " + value;
+				return "[TEXT     ] '" + value + "'";
 		}
 		return "";
 	}

@@ -3,23 +3,32 @@ package com.github.wing924.simpledom.core;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
-class XMLElement extends XML {
+class SElementNode extends SNode {
 
-	private Map<String, XML>	attributes;
-	private Map<String, XML>	elements;
+	private Map<String, SNode>	attributes;
+	private Map<String, SNode>	elements;
+	private List<SNode>			elementsOrder;
+	private String				qname;
 	private String				nodeValue;
 
-	public XMLElement(String qname) {
-		super(XMLNodeType.ELEMENT, qname);
+	public SElementNode(String qname) {
+		super(NodeType.ELEMENT);
+		this.qname = qname;
 	}
 
-	public XMLElement(String qname, String value) {
-		super(XMLNodeType.ELEMENT, qname);
+	public SElementNode(String qname, String value) {
+		super(NodeType.ELEMENT);
 		nodeValue = value;
+		this.qname = qname;
+	}
+
+	@Override
+	public String getNodeName() {
+		return qname;
 	}
 
 	@Override
@@ -28,15 +37,15 @@ class XMLElement extends XML {
 	}
 
 	@Override
-	public XML get(String qname) {
-		XML xml = getChild(qname);
-		if (xml == null) throw new XMLException("no such element or attritube: " + qname);
+	public SNode get(String qname) {
+		SNode xml = getChild(qname);
+		if (xml == null) throw new SimpleDomException("no such element or attritube: " + qname);
 		return xml;
 	}
 
 	@Override
-	public XML opt(String qname) {
-		XML xml = getChild(qname);
+	public SNode opt(String qname) {
+		SNode xml = getChild(qname);
 		if (xml == null) return NULL_NODE;
 		return xml;
 	}
@@ -46,7 +55,7 @@ class XMLElement extends XML {
 		return getChild(qname) != null;
 	}
 
-	private XML getChild(String qname) {
+	private SNode getChild(String qname) {
 		if (qname == null) throw new NullPointerException("qname nust not be null or empty String.");
 		if (qname.length() == 0) throw new IllegalArgumentException("qname must not be empty String.");
 		if (qname.charAt(0) == '@') {
@@ -57,8 +66,8 @@ class XMLElement extends XML {
 	}
 
 	@Override
-	public Map<String, XML> asMap(String key) {
-		return Collections.<String, XML> singletonMap(opt(key).asString(""), this);
+	public Map<String, SNode> asMap(String key) {
+		return Collections.<String, SNode> singletonMap(opt(key).asString(""), this);
 	}
 
 	@Override
@@ -66,13 +75,13 @@ class XMLElement extends XML {
 		StringBuilder sb = new StringBuilder();
 		sb.append("<" + getNodeName());
 		if (attributes != null) {
-			for (Map.Entry<String, XML> entry : attributes.entrySet()) {
+			for (Map.Entry<String, SNode> entry : attributes.entrySet()) {
 				sb.append(" " + entry.getKey() + "=\"" + entry.getValue().toString() + "\"");
 			}
 		}
 		sb.append(">");
 		if (elements != null) {
-			for (Map.Entry<String, XML> entry : elements.entrySet()) {
+			for (Map.Entry<String, SNode> entry : elements.entrySet()) {
 				sb.append(entry.getValue().toString());
 			}
 		} else {
@@ -83,38 +92,39 @@ class XMLElement extends XML {
 	}
 
 	@Override
-	public Iterator<XML> iterator() {
-		return Collections.<XML> singletonList(this).iterator();
+	public Iterator<SNode> iterator() {
+		return Collections.<SNode> singletonList(this).iterator();
 	}
 
 	@Override
-	public List<XML> attritubes() {
+	public List<SNode> attritubes() {
 		if (attributes == null || attributes.isEmpty()) return super.attritubes();
-		List<XML> list = new ArrayList<XML>();
-		for (XML v : attributes.values()) {
+		List<SNode> list = new ArrayList<SNode>();
+		for (SNode v : attributes.values()) {
 			list.add(v);
 		}
 		return list;
 	}
 
 	@Override
-	public List<XML> children() {
+	public List<SNode> children() {
 		if (elements == null || elements.isEmpty()) return super.children();
-		List<XML> list = new ArrayList<XML>();
-		for (XML v : elements.values()) {
-			switch (v.getNodeType()) {
-				case ELEMENT:
-					list.add(v);
-					break;
-				case ELEMENT_LIST:
-					for (XML x : v) {
-						list.add(x);
-					}
-					break;
-				default:
-					break;
-			}
-		}
+		List<SNode> list = new ArrayList<SNode>(elementsOrder);
+//		for (SNode v : elementsOrder) {
+//			list.add(v);
+//			switch (v.getNodeType()) {
+//				case ELEMENT:
+//					list.add(v);
+//					break;
+//				case ELEMENT_LIST:
+//					for (SNode x : v) {
+//						list.add(x);
+//					}
+//					break;
+//				default:
+//					break;
+//			}
+//		}
 		return list;
 	}
 
@@ -125,21 +135,25 @@ class XMLElement extends XML {
 
 	// internal use
 
-	void appendChild(XML xml) {
+	void appendChild(SNode xml) {
 		if (xml.isAttribute()) {
-			if (attributes == null) attributes = new LinkedHashMap<String, XML>();
+			if (attributes == null) attributes = new TreeMap<String, SNode>();
 			attributes.put(xml.getNodeName(), xml);
 		} else {
 			if (nodeValue != null) throw new IllegalStateException("only leaf node can contain text");
-			if (elements == null) elements = new LinkedHashMap<String, XML>();
+			if (elements == null) {
+				elements = new TreeMap<String, SNode>();
+				elementsOrder = new ArrayList<SNode>();
+			}
+			elementsOrder.add(xml);
 			String qname = xml.getNodeName();
-			XML child = elements.get(qname);
+			SNode child = elements.get(qname);
 			if (child == null) {
 				elements.put(qname, xml);
-			} else if (child.getNodeType() == XMLNodeType.ELEMENT_LIST) {
-				((XMLElementList) child).appendToList(xml);
+			} else if (child.getNodeType() == NodeType.ELEMENT_LIST) {
+				((SNodeList) child).appendToList(xml);
 			} else {
-				XMLElementList xmllist = new XMLElementList(qname);
+				SNodeList xmllist = new SNodeList();
 				xmllist.appendToList(child);
 				xmllist.appendToList(xml);
 				elements.put(qname, xmllist);

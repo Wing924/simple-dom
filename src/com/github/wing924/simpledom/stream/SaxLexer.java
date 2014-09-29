@@ -12,41 +12,41 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import com.github.wing924.simpledom.core.XMLException;
+import com.github.wing924.simpledom.core.SimpleDomException;
 import com.github.wing924.simpledom.stream.EventNode.TokenType;
 
-public class SaxXMLLexer implements XMLLexer {
+public class SaxLexer implements XMLLexer {
 
 	@Override
-	public EventReader parse(File f) throws IOException {
+	public EventReader lex(File f) throws IOException {
 		try {
 			SAXHander hander = new SAXHander();
 			getParser().parse(f, hander);
 			return new IteratorEventReader(hander.getTokens().iterator());
 		} catch (SAXException e) {
-			throw new XMLException(e);
+			throw new SimpleDomException(e);
 		}
 	}
 
 	@Override
-	public EventReader parse(InputStream is) throws IOException {
+	public EventReader lex(InputStream is) throws IOException {
 		try {
 			SAXHander hander = new SAXHander();
 			getParser().parse(is, hander);
 			return new IteratorEventReader(hander.getTokens().iterator());
 		} catch (SAXException e) {
-			throw new XMLException(e);
+			throw new SimpleDomException(e);
 		}
 	}
 
 	@Override
-	public EventReader parse(String uri) throws IOException {
+	public EventReader lex(String uri) throws IOException {
 		try {
 			SAXHander hander = new SAXHander();
 			getParser().parse(uri, hander);
 			return new IteratorEventReader(hander.getTokens().iterator());
 		} catch (SAXException e) {
-			throw new XMLException(e);
+			throw new SimpleDomException(e);
 		}
 	}
 
@@ -63,6 +63,8 @@ public class SaxXMLLexer implements XMLLexer {
 	private class SAXHander extends DefaultHandler {
 
 		private LinkedList<EventNode>	tokens	= new LinkedList<EventNode>();
+		private String					prevText;
+		private TokenType				prevType;
 
 		public final LinkedList<EventNode> getTokens() {
 			return tokens;
@@ -70,26 +72,26 @@ public class SaxXMLLexer implements XMLLexer {
 
 		@Override
 		public void characters(char[] ch, int start, int length) throws SAXException {
-			boolean emptyStr = true;
-			for (int i = 0; i < length; i++) {
-				if (ch[start + i] > ' ') {
-					emptyStr = false;
-					break;
-				}
-			}
-			if (!emptyStr) {
-				tokens.add(new EventNode(TokenType.TEXT, new String(ch, start, length)));
+			if (prevType == TokenType.START_TAG) {
+				prevText = length == 0 ? "" : new String(ch, start, length);
+				prevType = TokenType.TEXT;
 			}
 		}
 
 		@Override
 		public void endElement(String uri, String localName, String qName) throws SAXException {
+			if (prevType == TokenType.TEXT) {
+				tokens.add(new EventNode(TokenType.TEXT, prevText));
+				prevText = null;
+			}
 			tokens.add(new EventNode(TokenType.END_TAG, qName));
+			prevType = TokenType.END_TAG;
 		}
 
 		@Override
 		public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
 			tokens.add(new EventNode(TokenType.START_TAG, qName, attributes));
+			prevType = TokenType.START_TAG;
 		}
 	}
 }

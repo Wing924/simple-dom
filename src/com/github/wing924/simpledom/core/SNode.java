@@ -87,13 +87,13 @@ import java.util.Map;
  * 
  * @author weihe
  */
-public abstract class XML implements Iterable<XML> {
+public abstract class SNode implements Iterable<SNode> {
 	/**
 	 * ノードタイプ
 	 * 
 	 * @author weihe
 	 */
-	public enum XMLNodeType {
+	public enum NodeType {
 		/**
 		 * エレメント
 		 */
@@ -112,23 +112,19 @@ public abstract class XML implements Iterable<XML> {
 		NULL
 	}
 
-	private XMLNodeType			nodeType;
-	private String				qname;
+	private NodeType			nodeType;
 
 	private static final String	NULL_HACK_STRING	= "(null-hack)";
 
-	public XML(XMLNodeType nodeType, String qname) {
+	SNode(NodeType nodeType) {
 		this.nodeType = nodeType;
-		this.qname = qname;
 	}
 
-	public XMLNodeType getNodeType() {
+	public NodeType getNodeType() {
 		return nodeType;
 	}
 
-	public String getNodeName() {
-		return qname;
-	}
+	public abstract String getNodeName();
 
 	/**
 	 * nullかどうか
@@ -136,30 +132,30 @@ public abstract class XML implements Iterable<XML> {
 	 * @return
 	 */
 	public boolean isNull() {
-		return nodeType == XMLNodeType.NULL;
+		return nodeType == NodeType.NULL;
 	}
 
 	public boolean isAttribute() {
-		return nodeType == XMLNodeType.ATTRITUBE;
+		return nodeType == NodeType.ATTRITUBE;
 	}
 
 	public boolean isElement() {
-		return nodeType == XMLNodeType.ELEMENT;
+		return nodeType == NodeType.ELEMENT;
 	}
 
 	public boolean isElementList() {
-		return nodeType == XMLNodeType.ELEMENT_LIST;
+		return nodeType == NodeType.ELEMENT_LIST;
 	}
 
 	public boolean isLeafNode() {
 		return false;
 	}
 
-	public XML get(String qname) {
+	public SNode get(String qname) {
 		throw new UnsupportedOperationException("className = " + getClass().getSimpleName());
 	}
 
-	public XML opt(String qname) {
+	public SNode opt(String qname) {
 		return NULL_NODE;
 	}
 
@@ -171,26 +167,26 @@ public abstract class XML implements Iterable<XML> {
 		return 1;
 	}
 
-	public XML get(int index) {
+	public SNode get(int index) {
 		if (index != 0) throw new ArrayIndexOutOfBoundsException();
 		return this;
 	}
 
-	public XML opt(int index) {
+	public SNode opt(int index) {
 		if (index != 0) return NULL_NODE;
 		return this;
 	}
 
 	@Override
-	public Iterator<XML> iterator() {
-		return Collections.<XML> emptyList().iterator();
+	public Iterator<SNode> iterator() {
+		return Collections.<SNode> emptyList().iterator();
 	}
 
-	public List<XML> attritubes() {
+	public List<SNode> attritubes() {
 		return Collections.emptyList();
 	}
 
-	public List<XML> children() {
+	public List<SNode> children() {
 		return Collections.emptyList();
 	}
 
@@ -210,7 +206,7 @@ public abstract class XML implements Iterable<XML> {
 	 * @param key
 	 * @return
 	 */
-	public Map<String, XML> asMap(String key) {
+	public Map<String, SNode> asMap(String key) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -379,17 +375,16 @@ public abstract class XML implements Iterable<XML> {
 		} catch (Exception e) {
 			return nullHack;
 		}
-
 	}
 
 	protected abstract String getValue();
 
-	public static final XML	NULL_NODE	= new NullValue();
+	public static final SNode	NULL_NODE	= new NullValue();
 
-	private static class NullValue extends XML {
+	private static class NullValue extends SNode {
 
 		public NullValue() {
-			super(XMLNodeType.NULL, "");
+			super(NodeType.NULL);
 		}
 
 		@Override
@@ -400,6 +395,11 @@ public abstract class XML implements Iterable<XML> {
 		@Override
 		protected String getValue() {
 			return null;
+		}
+
+		@Override
+		public String getNodeName() {
+			return "";
 		}
 	}
 }

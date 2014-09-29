@@ -1,8 +1,5 @@
 package com.github.wing924.simpledom.core;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -10,46 +7,26 @@ import java.util.Map.Entry;
 import com.github.wing924.simpledom.stream.EventNode;
 import com.github.wing924.simpledom.stream.EventNode.TokenType;
 import com.github.wing924.simpledom.stream.EventReader;
-import com.github.wing924.simpledom.stream.XMLLexer;
 
-public class XMLBuilder {
+public class SimpleDomParser {
 
-	private XMLLexer	lexer;
 	private EventReader	eventReader;
 
-	XMLBuilder() {
-	}
-
-	final void setLexer(XMLLexer lexer) {
-		this.lexer = lexer;
-	}
-
-	public void setInput(File f) throws IOException {
-		eventReader = lexer.parse(f);
-	}
-
-	public void setInput(InputStream is) throws IOException {
-		eventReader = lexer.parse(is);
-	}
-
-	public void setInput(String uri) throws IOException {
-		eventReader = lexer.parse(uri);
-	}
-
-	public XML parse() {
+	public SNode parse(EventReader eventReader) {
+		this.eventReader = eventReader;
 		if (eventReader == null) throw new NullPointerException("please set input source");
-		if (!eventReader.hasNext()) return XML.NULL_NODE;
-		XML xml = buildElement();
+		if (!eventReader.hasNext()) return SNode.NULL_NODE;
+		SNode xml = buildElement();
 		eventReader = null;
 		return xml;
 	}
 
-	private XML buildElement() {
+	private SNode buildElement() {
 		EventNode token = eventReader.next();
-		if (token.getType() != TokenType.START_TAG) throw new XMLException("Broken XML: first token must be START_TAG");
+		if (token.getType() != TokenType.START_TAG) throw new SimpleDomException("Broken XML: first token must be START_TAG");
 		String qname = token.getValue();
 
-		XMLElement element = new XMLElement(qname);
+		SElementNode element = new SElementNode(qname);
 
 		List<Entry<String, String>> attributes = token.getAttributes();
 
@@ -57,7 +34,7 @@ public class XMLBuilder {
 			for (Map.Entry<String, String> entry : attributes) {
 				String attrQname = entry.getKey();
 				String attrValue = entry.getValue();
-				element.appendChild(new XMLAttribute(attrQname, attrValue));
+				element.appendChild(new SAttributeNode(attrQname, attrValue));
 			}
 		}
 
@@ -72,11 +49,11 @@ public class XMLBuilder {
 					element.setNodeValue(text);
 					eventReader.next();
 					nextToken = eventReader.next();
-					if (nextToken.getType() != TokenType.END_TAG) throw new XMLException(
+					if (nextToken.getType() != TokenType.END_TAG) throw new SimpleDomException(
 							"Broken XML: text node must be in the leaf node");
 					return element;
 				case START_TAG:
-					XML child = buildElement();
+					SNode child = buildElement();
 					element.appendChild(child);
 			}
 		}

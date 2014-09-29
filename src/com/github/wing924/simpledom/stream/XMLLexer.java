@@ -6,9 +6,9 @@ import java.io.InputStream;
 
 public interface XMLLexer {
 	
-	public EventReader parse(File f) throws IOException;
+	public EventReader lex(File f) throws IOException;
 
-	public EventReader parse(InputStream is) throws IOException;
+	public EventReader lex(InputStream is) throws IOException;
 
-	public EventReader parse(String uri) throws IOException;
+	public EventReader lex(String uri) throws IOException;
 }
