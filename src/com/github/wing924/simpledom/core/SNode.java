@@ -45,14 +45,14 @@ import java.util.Map;
  * <td>空マップ</td>
  * <td>keyが"@"開始ならば属性、以外なら子ノード</td>
  * </tr>
- * <td>asXXX (XXXは型)</td>
+ * <td>asXXX() (XXXは型)</td>
  * <td>葉ノードのみ値、それ以外はエラー</td>
  * <td>最初のノードが葉ノードのみ値、それ以外はエラー</td>
  * <td>値</td>
  * <td>エラー</td>
  * <td>変換出来ない場合はエラー</td> </tr>
  * <tr>
- * <td>optXXX (XXXは型)</td>
+ * <td>asXXX(T nullHack) (XXXは型)</td>
  * <td>葉ノードのみ値、それ以外はnullHack</td>
  * <td>最初のノードが葉ノードのみ値、それ以外はnullHack</td>
  * <td>値</td>

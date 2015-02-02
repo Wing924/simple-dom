@@ -28,7 +28,7 @@ public class SimpleTest {
 	public void test() throws IOException {
 		SNode xml = new SimpleDomParser().parse(new SaxLexer().lex(new ByteArrayInputStream(XML_STR.getBytes())));
 		assertNotNull(xml);
-		System.out.println(xml);
+//		System.out.println(xml);
 		assertEquals(1, xml.get("item").get("@id").asInteger());
 		assertEquals(2, xml.get("item").get(1).get("@id").asInteger());
 		assertEquals(5, xml.get("item").get(1).opt("@name").asInteger(5));
@@ -37,5 +37,9 @@ public class SimpleTest {
 		assertEquals("haha", xml.get("item").get(1).get("cost").get("@fx:name").asString());
 		assertEquals(2, xml.get("item").length());
 		assertEquals("items", xml.getNodeName());
+		for (SNode s : xml.get("item")) {
+			System.out.println(s.get("@id").asFloat());
+		}
+		assertEquals(10, 20);
 	}
 }
