@@ -3,7 +3,8 @@ package com.github.wing924.simpledom.stream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.LinkedList;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -62,12 +63,18 @@ public class SaxLexer implements XMLLexer {
 
 	private class SAXHander extends DefaultHandler {
 
-		private LinkedList<EventNode>	tokens	= new LinkedList<EventNode>();
-		private String					prevText;
-		private TokenType				prevType;
+		private List<EventNode> tokens = new ArrayList<EventNode>();
+		private String prevText;
+		private TokenType prevType;
 
-		public final LinkedList<EventNode> getTokens() {
+		public final List<EventNode> getTokens() {
 			return tokens;
+		}
+
+		@Override
+		public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+			tokens.add(new EventNode(TokenType.START_TAG, qName, attributes));
+			prevType = TokenType.START_TAG;
 		}
 
 		@Override
@@ -75,6 +82,8 @@ public class SaxLexer implements XMLLexer {
 			if (prevType == TokenType.START_TAG) {
 				prevText = length == 0 ? "" : new String(ch, start, length);
 				prevType = TokenType.TEXT;
+			} else if (prevType == TokenType.TEXT) {
+				prevText += length == 0 ? "" : new String(ch, start, length);
 			}
 		}
 
@@ -88,10 +97,5 @@ public class SaxLexer implements XMLLexer {
 			prevType = TokenType.END_TAG;
 		}
 
-		@Override
-		public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
-			tokens.add(new EventNode(TokenType.START_TAG, qName, attributes));
-			prevType = TokenType.START_TAG;
-		}
 	}
 }

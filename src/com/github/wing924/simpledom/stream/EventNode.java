@@ -14,9 +14,9 @@ public class EventNode {
 		START_TAG, END_TAG, TEXT
 	}
 
-	private TokenType						type;
-	private String							value	= "";
-	private List<Map.Entry<String, String>>	attributes;
+	private TokenType type;
+	private String value = "";
+	private List<Map.Entry<String, String>> attributes;
 
 	public EventNode(TokenType type, String value) {
 		this.type = type;

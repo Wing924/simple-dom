@@ -129,7 +129,7 @@ public abstract class SNode implements Iterable<SNode> {
 	/**
 	 * nullかどうか
 	 * 
-	 * @return
+	 * @return true: if it is null Node
 	 */
 	public boolean isNull() {
 		return nodeType == NodeType.NULL;
@@ -204,7 +204,7 @@ public abstract class SNode implements Iterable<SNode> {
 	 * {"ja" -> "雲", "en" -> "cloud"}
 	 * 
 	 * @param key
-	 * @return
+	 * @return key-to-value Map
 	 */
 	public Map<String, SNode> asMap(String key) {
 		throw new UnsupportedOperationException();

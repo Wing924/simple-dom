@@ -1,10 +1,8 @@
 package com.github.wing924.simpledom.stream;
 
-public interface EventReader {
+import java.util.Iterator;
+
+public interface EventReader extends Iterator<EventNode> {
 	
-	public boolean hasNext();
-
-	public EventNode next();
-
 	public EventNode peek();
 }
