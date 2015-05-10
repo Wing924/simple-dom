@@ -1,32 +1,29 @@
-package com.github.wing924.simpledom.core;
+package com.splendidvenus.xml;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import com.github.wing924.simpledom.stream.EventNode;
-import com.github.wing924.simpledom.stream.EventNode.TokenType;
-import com.github.wing924.simpledom.stream.EventReader;
+import com.splendidvenus.xml.EventNode.TokenType;
 
-public class SimpleDomParser {
+class XMLParser {
 
-	private EventReader	eventReader;
+	private EventReader eventReader;
 
-	public SNode parse(EventReader eventReader) {
+	public XML parse(EventReader eventReader) {
 		this.eventReader = eventReader;
-		if (eventReader == null) throw new NullPointerException("please set input source");
-		if (!eventReader.hasNext()) return SNode.NULL_NODE;
-		SNode xml = buildElement();
+		if (!eventReader.hasNext()) return XML.NULL;
+		XML xml = buildElement();
 		eventReader = null;
 		return xml;
 	}
 
-	private SNode buildElement() {
+	private XML buildElement() {
 		EventNode token = eventReader.next();
-		if (token.getType() != TokenType.START_TAG) throw new SimpleDomException("Broken XML: first token must be START_TAG");
+		if (token.getType() != TokenType.START_TAG) throw new XMLException("Broken XML: first token must be START_TAG");
 		String qname = token.getValue();
 
-		SElementNode element = new SElementNode(qname);
+		XMLElement element = new XMLElement(qname);
 
 		List<Entry<String, String>> attributes = token.getAttributes();
 
@@ -34,7 +31,7 @@ public class SimpleDomParser {
 			for (Map.Entry<String, String> entry : attributes) {
 				String attrQname = entry.getKey();
 				String attrValue = entry.getValue();
-				element.appendChild(new SAttributeNode(attrQname, attrValue));
+				element.appendChild(new XMLAttribute(attrQname, attrValue));
 			}
 		}
 
@@ -49,11 +46,11 @@ public class SimpleDomParser {
 					element.setNodeValue(text);
 					eventReader.next();
 					nextToken = eventReader.next();
-					if (nextToken.getType() != TokenType.END_TAG) throw new SimpleDomException(
+					if (nextToken.getType() != TokenType.END_TAG) throw new XMLException(
 							"Broken XML: text node must be in the leaf node");
 					return element;
 				case START_TAG:
-					SNode child = buildElement();
+					XML child = buildElement();
 					element.appendChild(child);
 			}
 		}

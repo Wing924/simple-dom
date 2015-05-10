@@ -1,4 +1,4 @@
-package com.github.wing924.simpledom.stream;
+package com.splendidvenus.xml;
 
 import java.util.AbstractMap;
 import java.util.ArrayList;
@@ -8,7 +8,7 @@ import java.util.Map.Entry;
 
 import org.xml.sax.Attributes;
 
-public class EventNode {
+class EventNode {
 
 	public enum TokenType {
 		START_TAG, END_TAG, TEXT

@@ -1,14 +1,14 @@
-package com.github.wing924.simpledom.stream;
+package com.splendidvenus.xml;
 
 import java.util.Iterator;
 
-public class IteratorEventReader implements EventReader {
+class EventReader implements Iterator<EventNode> {
 
 	private Iterator<EventNode> iter;
 
 	private EventNode peekNode;
 
-	public IteratorEventReader(Iterator<EventNode> iter) {
+	public EventReader(Iterator<EventNode> iter) {
 		this.iter = iter;
 	}
 
@@ -27,7 +27,6 @@ public class IteratorEventReader implements EventReader {
 		return iter.next();
 	}
 
-	@Override
 	public EventNode peek() {
 		if (peekNode != null) return peekNode;
 		return peekNode = iter.next();

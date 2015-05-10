@@ -1,5 +1,6 @@
-package com.github.wing924.simpledom.stream;
+package com.splendidvenus.xml;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -13,41 +14,41 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import com.github.wing924.simpledom.core.SimpleDomException;
-import com.github.wing924.simpledom.stream.EventNode.TokenType;
+import com.splendidvenus.xml.EventNode.TokenType;
 
-public class SaxLexer implements XMLLexer {
+public class XMLLexer {
 
-	@Override
 	public EventReader lex(File f) throws IOException {
 		try {
 			SAXHander hander = new SAXHander();
 			getParser().parse(f, hander);
-			return new IteratorEventReader(hander.getTokens().iterator());
+			return new EventReader(hander.getTokens().iterator());
 		} catch (SAXException e) {
-			throw new SimpleDomException(e);
+			throw new XMLException(e);
 		}
 	}
 
-	@Override
 	public EventReader lex(InputStream is) throws IOException {
 		try {
 			SAXHander hander = new SAXHander();
 			getParser().parse(is, hander);
-			return new IteratorEventReader(hander.getTokens().iterator());
+			return new EventReader(hander.getTokens().iterator());
 		} catch (SAXException e) {
-			throw new SimpleDomException(e);
+			throw new XMLException(e);
 		}
 	}
 
-	@Override
-	public EventReader lex(String uri) throws IOException {
+	public EventReader lex(String xmlString) {
 		try {
 			SAXHander hander = new SAXHander();
-			getParser().parse(uri, hander);
-			return new IteratorEventReader(hander.getTokens().iterator());
+			try {
+				getParser().parse(new ByteArrayInputStream(xmlString.getBytes()), hander);
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+			return new EventReader(hander.getTokens().iterator());
 		} catch (SAXException e) {
-			throw new SimpleDomException(e);
+			throw new XMLException(e);
 		}
 	}
 

@@ -1,5 +1,8 @@
-package com.github.wing924.simpledom.core;
+package com.splendidvenus.xml;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -9,6 +12,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+
+import com.splendidvenus.xml.filters.XMLFilter;
+import com.splendidvenus.xml.query.QueryParser;
 
 /**
  * シンプルなDOMライクのXMLパーサー。java DOMより軽量で、SAXやXmlPullParserより可読性良い。
@@ -87,7 +93,7 @@ import java.util.Map;
  * 
  * @author weihe
  */
-public abstract class SNode implements Iterable<SNode> {
+public abstract class XML implements Iterable<XML> {
 	/**
 	 * ノードタイプ
 	 * 
@@ -112,11 +118,25 @@ public abstract class SNode implements Iterable<SNode> {
 		NULL
 	}
 
-	private NodeType			nodeType;
+	public static final XML NULL = new NullValue();
 
-	private static final String	NULL_HACK_STRING	= "(null-hack)";
+	private NodeType nodeType;
 
-	SNode(NodeType nodeType) {
+	private static final String NULL_HACK_STRING = "(null-hack)$";
+
+	public static XML parse(InputStream is) throws IOException {
+		return new XMLParser().parse(new XMLLexer().lex(is));
+	}
+
+	public static XML parse(File file) throws IOException {
+		return new XMLParser().parse(new XMLLexer().lex(file));
+	}
+
+	public static XML parse(String xmlString) {
+		return new XMLParser().parse(new XMLLexer().lex(xmlString));
+	}
+
+	XML(NodeType nodeType) {
 		this.nodeType = nodeType;
 	}
 
@@ -151,14 +171,6 @@ public abstract class SNode implements Iterable<SNode> {
 		return false;
 	}
 
-	public SNode get(String qname) {
-		throw new UnsupportedOperationException("className = " + getClass().getSimpleName());
-	}
-
-	public SNode opt(String qname) {
-		return NULL_NODE;
-	}
-
 	public boolean has(String qname) {
 		return false;
 	}
@@ -167,26 +179,44 @@ public abstract class SNode implements Iterable<SNode> {
 		return 1;
 	}
 
-	public SNode get(int index) {
-		if (index != 0) throw new ArrayIndexOutOfBoundsException();
+	public XML get(String qname) {
+		if (qname.charAt(0) == '@') return getAttribute(qname.substring(1));
+		if (isLeafNode()) return NULL;
+		return getElement(qname);
+	}
+
+	public XML get(int index) {
+		if (index != 0) return NULL;
 		return this;
 	}
 
-	public SNode opt(int index) {
-		if (index != 0) return NULL_NODE;
-		return this;
+	public XML filter(XMLFilter filter) {
+		if (filter.test(this)) return this;
+		return NULL;
+	}
+
+	public XML query(String expression) {
+		return new QueryParser().eval(this, expression);
+	}
+
+	public XML getAttribute(String qname) {
+		return NULL;
+	}
+
+	public XML getElement(String qname) {
+		return NULL;
 	}
 
 	@Override
-	public Iterator<SNode> iterator() {
-		return Collections.<SNode> emptyList().iterator();
+	public Iterator<XML> iterator() {
+		return Collections.<XML> emptyList().iterator();
 	}
 
-	public List<SNode> attritubes() {
+	public List<XML> attritubes() {
 		return Collections.emptyList();
 	}
 
-	public List<SNode> children() {
+	public List<XML> children() {
 		return Collections.emptyList();
 	}
 
@@ -206,14 +236,8 @@ public abstract class SNode implements Iterable<SNode> {
 	 * @param key
 	 * @return key-to-value Map
 	 */
-	public Map<String, SNode> asMap(String key) {
+	public Map<String, XML> asMap(String key) {
 		throw new UnsupportedOperationException();
-	}
-
-	public String asRawString() {
-		String value = getValue();
-		if (value == null) throw new NullPointerException();
-		return value;
 	}
 
 	public String asString() {
@@ -259,7 +283,7 @@ public abstract class SNode implements Iterable<SNode> {
 	}
 
 	public Date asDate(String dateFormat) throws ParseException {
-		return new SimpleDateFormat(dateFormat, Locale.US).parse(asString());
+		return new SimpleDateFormat(dateFormat, Locale.getDefault()).parse(asString());
 	}
 
 	public <T extends Enum<T>> T asEnum(Class<T> clazz) {
@@ -379,12 +403,15 @@ public abstract class SNode implements Iterable<SNode> {
 
 	protected abstract String getValue();
 
-	public static final SNode	NULL_NODE	= new NullValue();
-
-	private static class NullValue extends SNode {
+	private static class NullValue extends XML {
 
 		public NullValue() {
 			super(NodeType.NULL);
+		}
+
+		@Override
+		public int length() {
+			return 0;
 		}
 
 		@Override
@@ -399,7 +426,7 @@ public abstract class SNode implements Iterable<SNode> {
 
 		@Override
 		public String getNodeName() {
-			return "";
+			return null;
 		}
 	}
 }
