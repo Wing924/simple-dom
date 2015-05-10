@@ -61,13 +61,18 @@ XML root = XML.parse(/* XML written above */);
 root.query("item/name(@lang=='ja')").asString(); // りんご
 
 // get banana's price
-root.query("item(@id='pine')/price").asInteger(); // 150
+root.query("item(@id='banana')/price").asInteger(); // 150
 
 // get 3rd item's count
 root.query("item[2]/count").asInteger(); // 5
 
 // get number of item
 root.get("item").length() // 3
+
+// iterate item
+for(XML item : root.get("item")) {
+    System.out.print(item.get("@id").asString() + " "); // apple banana pine
+}
 ```
 
 
