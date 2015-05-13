@@ -2,7 +2,7 @@ package com.splendidvenus.xml.filters;
 
 import com.splendidvenus.xml.XML;
 
-public class CondFilter implements XMLFilter {
+public class CompareFilter implements XMLFilter {
 
 	private enum Operator {
 		EQ, NE, GT, GTE, LT, LTE
@@ -14,19 +14,19 @@ public class CondFilter implements XMLFilter {
 	private Long intValue = null;
 	private Double doubleValue = null;
 
-	public CondFilter(String name, String operator, String value) {
+	public CompareFilter(String name, String operator, String value) {
 		this.name = name;
 		this.strValue = value;
 		op = parseOperator(operator);
 	}
 
-	public CondFilter(String name, String operator, long value) {
+	public CompareFilter(String name, String operator, long value) {
 		this.name = name;
 		this.intValue = value;
 		op = parseOperator(operator);
 	}
 
-	public CondFilter(String name, String operator, double value) {
+	public CompareFilter(String name, String operator, double value) {
 		this.name = name;
 		this.doubleValue = value;
 		op = parseOperator(operator);

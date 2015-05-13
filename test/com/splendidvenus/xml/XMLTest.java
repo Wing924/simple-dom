@@ -6,7 +6,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.splendidvenus.xml.XML.NodeType;
-import com.splendidvenus.xml.filters.CondFilter;
+import com.splendidvenus.xml.filters.CompareFilter;
 
 public class XMLTest {
 
@@ -101,10 +101,10 @@ public class XMLTest {
 
 	@Test
 	public void testFilter() {
-		assertEquals("value10", xml2.get("item").filter(new CondFilter("@id", "==", 10)).asString());
-		assertEquals(10, xml2.get("item").filter(new CondFilter("@id", "<", 10)).length());
-		assertEquals(11, xml2.get("item").filter(new CondFilter("@id", "<=", 10)).length());
-		assertTrue(xml2.get("item").filter(new CondFilter("@id", "==", "a")).isNull());
+		assertEquals("value10", xml2.get("item").filter(new CompareFilter("@id", "==", 10)).asString());
+		assertEquals(10, xml2.get("item").filter(new CompareFilter("@id", "<", 10)).length());
+		assertEquals(11, xml2.get("item").filter(new CompareFilter("@id", "<=", 10)).length());
+		assertTrue(xml2.get("item").filter(new CompareFilter("@id", "==", "a")).isNull());
 	}
 
 	@Test

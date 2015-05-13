@@ -1,7 +1,7 @@
 package com.splendidvenus.xml.query;
 
 import com.splendidvenus.xml.XML;
-import com.splendidvenus.xml.filters.CondFilter;
+import com.splendidvenus.xml.filters.CompareFilter;
 import com.splendidvenus.xml.filters.XMLFilter;
 import com.splendidvenus.xml.query.QueryLexer.Token;
 import com.splendidvenus.xml.query.QueryLexer.TokenType;
@@ -111,13 +111,13 @@ public class QueryParser {
 			// remove " or '
 			String str = token.text.subSequence(1, token.text.length() - 1).toString();
 			str = str.replaceAll("\\'", "'").replaceAll("\\\"", "\"");
-			filter = new CondFilter(name, op, str);
+			filter = new CompareFilter(name, op, str);
 		} else {
 			String num = token.text.toString();
 			if (num.indexOf('.') >= 0) {// double
-				filter = new CondFilter(name, op, Double.parseDouble(num));
+				filter = new CompareFilter(name, op, Double.parseDouble(num));
 			} else {
-				filter = new CondFilter(name, op, Integer.parseInt(num));
+				filter = new CompareFilter(name, op, Integer.parseInt(num));
 			}
 		}
 		node = node.filter(filter);
