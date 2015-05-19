@@ -14,6 +14,7 @@ class QueryLexer {
 	 * Str   := ('.*'|".*")
 	 * Attr  := @[a-zA-Z_][-a-zA-Z0-9_:.]*
 	 * Slash := '/'
+	 * And   := '&&'
 	 * Op    := [><!]=?|==
 	 * Lbr   := '['
 	 * Rbr   := ']'
@@ -29,14 +30,15 @@ class QueryLexer {
 	private static final Pattern OP_REGEX = Pattern.compile("^[><!]=?|==");
 
 	public enum TokenType {
-		Num, Elem, Str, Attr, Slash, Op, Lbr, Rbr, Lpar, Rpar, EOF, Unknown
+		Num, Elem, Str, Attr, Slash, And, Op, Lbr, Rbr, Lpar, Rpar, EOF, Unknown
 	}
 
-	public static class Token {
+	static class Token {
 		TokenType type;
 		CharSequence text;
 
 		public static final Token SLASH = new Token(TokenType.Slash, "/");
+		public static final Token AND = new Token(TokenType.And, "&&");
 		public static final Token LBR = new Token(TokenType.Lbr, "[");
 		public static final Token RBR = new Token(TokenType.Rbr, "]");
 		public static final Token LPAR = new Token(TokenType.Lpar, "(");
@@ -47,6 +49,12 @@ class QueryLexer {
 			this.type = type;
 			this.text = text;
 		}
+
+		@Override
+		public String toString() {
+			return String.format("%s: '%s'", type.name(), text);
+		}
+
 	}
 
 	private char[] expr;
@@ -78,6 +86,9 @@ class QueryLexer {
 			switch (tokenType) {
 				case Attr:
 					tokens.add(new Token(TokenType.Attr, text()));
+					break;
+				case And:
+					tokens.add(Token.AND);
 					break;
 				case EOF:
 					tokens.add(Token.EOF);
@@ -130,6 +141,9 @@ class QueryLexer {
 				return TokenType.Rpar;
 			case '/':
 				return TokenType.Slash;
+			case '&':
+				if (read() == '&') return TokenType.And;
+				return TokenType.Unknown;
 			case '@':
 				unread();
 				return nextPattern(ATTR_REGEX, TokenType.Attr);

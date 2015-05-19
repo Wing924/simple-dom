@@ -110,9 +110,12 @@ public abstract class XML implements Iterable<XML> {
 
 	/**
 	 * Parse XML Document from InputStream
-	 * @param is input stream to parse
+	 * 
+	 * @param is
+	 *            input stream to parse
 	 * @return the root node of given XML
-	 * @throws IOException when I/O Exception occurred
+	 * @throws IOException
+	 *             when I/O Exception occurred
 	 */
 	public static XML parse(InputStream is) throws IOException {
 		return new XMLParser().parse(new XMLLexer().lex(is));
@@ -120,9 +123,12 @@ public abstract class XML implements Iterable<XML> {
 
 	/**
 	 * Parse XML Document from file
-	 * @param file xml file to parse
+	 * 
+	 * @param file
+	 *            xml file to parse
 	 * @return the root node of given XML
-	 * @throws IOException when I/O Exception occurred
+	 * @throws IOException
+	 *             when I/O Exception occurred
 	 */
 	public static XML parse(File file) throws IOException {
 		return new XMLParser().parse(new XMLLexer().lex(file));
@@ -130,7 +136,9 @@ public abstract class XML implements Iterable<XML> {
 
 	/**
 	 * Parse XML Document from String
-	 * @param xmlString xml String
+	 * 
+	 * @param xmlString
+	 *            xml String
 	 * @return the root node of given XML
 	 */
 	public static XML parse(String xmlString) {
@@ -148,6 +156,7 @@ public abstract class XML implements Iterable<XML> {
 
 	/**
 	 * Get the node's type
+	 * 
 	 * @return the node's type
 	 */
 	public NodeType getNodeType() {
@@ -156,12 +165,14 @@ public abstract class XML implements Iterable<XML> {
 
 	/**
 	 * Get the node's name
+	 * 
 	 * @return the node's name
 	 */
 	public abstract String getNodeName();
 
 	/**
 	 * check if is null
+	 * 
 	 * @return true: if it is null Node
 	 */
 	public boolean isNull() {
@@ -210,6 +221,10 @@ public abstract class XML implements Iterable<XML> {
 
 	public XML query(String expression) {
 		return new QueryParser().eval(this, expression);
+	}
+
+	public XML query(String expression, Object... args) {
+		return query(String.format(expression, args));
 	}
 
 	public XML getAttribute(String qname) {

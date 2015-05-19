@@ -112,6 +112,7 @@ public class XMLTest {
 	public void testQuery() {
 		assertEquals("value3", xml2.query("item(@id==3)").asString());
 		assertEquals("value6", xml2.query("item(@id > 3)[2]").asString());
+		assertEquals(3, xml2.query("item(@id > 3 && @id < 7)").length());
 	}
 
 	// @Test

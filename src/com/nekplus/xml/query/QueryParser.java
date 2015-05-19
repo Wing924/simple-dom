@@ -1,6 +1,7 @@
 package com.nekplus.xml.query;
 
 import com.nekplus.xml.XML;
+import com.nekplus.xml.filters.AndFilter;
 import com.nekplus.xml.filters.CompareFilter;
 import com.nekplus.xml.filters.XMLFilter;
 import com.nekplus.xml.query.QueryLexer.Token;
@@ -15,7 +16,9 @@ public class QueryParser {
 	 * TAG    := Elem [ FILTER ] 
 	 * FILTER := INDEX | COND [ INDEX ]
 	 * INDEX  := Lbr Num Rbr
-	 * COND   := Lpar (Attr | Elem) Op ( Str | Num ) Rpar
+	 * COND   := Lpar AND Rpar
+	 * AND    := TERM { and TERM }
+	 * TERM   := (Attr | Elem) Op ( Str | Num )
 	 */
 	//@formatter:on
 
@@ -91,9 +94,25 @@ public class QueryParser {
 		return true;
 	}
 
-	// COND := Lpar (Attr | Elem) Op ( Str | Num ) Rpar
+	// COND := Lpar AND Rpar
 	private boolean parseCond() {
 		if (!predict(TokenType.Lpar)) return false;
+		parseAnd();
+		test(TokenType.Rpar, lexer.nextToken());
+		return true;
+	}
+
+	private void parseAnd() {
+		XMLFilter filter1 = parseTerm();
+		for (;;) {
+			if (!predict(TokenType.And)) break;
+			XMLFilter filter2 = parseTerm();
+			filter1 = new AndFilter(filter1, filter2);
+		}
+		node = node.filter(filter1);
+	}
+
+	private XMLFilter parseTerm() {
 		// Attr | Elem
 		Token token = lexer.nextToken();
 		test(token.type == TokenType.Attr || token.type == TokenType.Elem);
@@ -105,7 +124,6 @@ public class QueryParser {
 		// Str | Num
 		token = lexer.nextToken();
 		test(token.type == TokenType.Str || token.type == TokenType.Num);
-		test(TokenType.Rpar, lexer.nextToken());
 		XMLFilter filter;
 		if (token.type == TokenType.Str) {
 			// remove " or '
@@ -117,11 +135,10 @@ public class QueryParser {
 			if (num.indexOf('.') >= 0) {// double
 				filter = new CompareFilter(name, op, Double.parseDouble(num));
 			} else {
-				filter = new CompareFilter(name, op, Integer.parseInt(num));
+				filter = new CompareFilter(name, op, Long.parseLong(num));
 			}
 		}
-		node = node.filter(filter);
-		return true;
+		return filter;
 	}
 
 	private void test(TokenType expect, Token actual) {
