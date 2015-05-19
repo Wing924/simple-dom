@@ -1,4 +1,4 @@
-package com.splendidvenus.xml;
+package com.nekplus.xml;
 
 public class XMLException extends RuntimeException {
 

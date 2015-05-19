@@ -1,12 +1,10 @@
-package com.splendidvenus.xml;
+package com.nekplus.xml;
 
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
-import com.splendidvenus.xml.filters.XMLFilter;
+import com.nekplus.xml.filters.XMLFilter;
 
 class XMLList extends XML {
 
@@ -61,16 +59,6 @@ class XMLList extends XML {
 		}
 		if (filtered.isEmpty()) return NULL;
 		return new XMLList(filtered);
-	}
-
-	@Override
-	public Map<String, XML> asMap(String key) {
-		Map<String, XML> map = new LinkedHashMap<String, XML>();
-		for (XML xml : list) {
-			XML value = xml.get(key);
-			map.put(value.asString(""), xml);
-		}
-		return map;
 	}
 
 	@Override

@@ -1,4 +1,4 @@
-package com.splendidvenus.xml;
+package com.nekplus.xml;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -14,9 +14,9 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import com.splendidvenus.xml.EventNode.TokenType;
+import com.nekplus.xml.EventNode.TokenType;
 
-public class XMLLexer {
+class XMLLexer {
 
 	public EventReader lex(File f) throws IOException {
 		try {

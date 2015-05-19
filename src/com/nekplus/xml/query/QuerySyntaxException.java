@@ -1,6 +1,6 @@
-package com.splendidvenus.xml.query;
+package com.nekplus.xml.query;
 
-import com.splendidvenus.xml.XMLException;
+import com.nekplus.xml.XMLException;
 
 public class QuerySyntaxException extends XMLException {
 

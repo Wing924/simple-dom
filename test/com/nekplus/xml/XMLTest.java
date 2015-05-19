@@ -1,12 +1,13 @@
-package com.splendidvenus.xml;
+package com.nekplus.xml;
 
 import static org.junit.Assert.*;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.splendidvenus.xml.XML.NodeType;
-import com.splendidvenus.xml.filters.CompareFilter;
+import com.nekplus.xml.XML;
+import com.nekplus.xml.XML.NodeType;
+import com.nekplus.xml.filters.CompareFilter;
 
 public class XMLTest {
 

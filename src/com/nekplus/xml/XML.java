@@ -1,4 +1,4 @@
-package com.splendidvenus.xml;
+package com.nekplus.xml;
 
 import java.io.File;
 import java.io.IOException;
@@ -11,54 +11,37 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
-import com.splendidvenus.xml.filters.XMLFilter;
-import com.splendidvenus.xml.query.QueryParser;
+import com.nekplus.xml.filters.XMLFilter;
+import com.nekplus.xml.query.QueryParser;
 
 /**
- * シンプルなDOMライクのXMLパーサー。java DOMより軽量で、SAXやXmlPullParserより可読性良い。
+ * Simple DOM-like XML parser.
  * <table border='1'>
  * <tr>
- * <td></td>
+ * <td>Method \ Node type</td>
  * <td>ELEMENT</td>
  * <td>ELEMENT_LIST</td>
  * <td>ATTRITUBE</td>
  * <td>NULL</td>
- * <td>補足</td>
+ * <td>extra</td>
  * </tr>
  * <tr>
  * <td>get</td>
- * <td>ノードの属性/子ノード (ない場合はエラー)</td>
- * <td>最初のノードの属性/子ノード (ない場合はエラー)</td>
- * <td>エラー</td>
- * <td>エラー</td>
- * <td>属性の場合は"@" + (名前)。例：@id</td>
+ * <td>its attritube or child</td>
+ * <td>first element's attritube or child</td>
+ * <td>NULL</td>
+ * <td>NULL</td>
+ * <td>to get attribute, use "@" + (name) ex:@id</td>
  * </tr>
- * <tr>
- * <td>opt</td>
- * <td>ノードの属性/子ノード (ない場合はNULL_NODE)</td>
- * <td>最初のノードの属性/子ノード (ない場合はNULL_NODE)</td>
- * <td>NULL_NODE</td>
- * <td>NULL_NODE</td>
- * <td>属性の場合は"@" + (名前)。例：@id</td>
- * </tr>
- * <tr>
- * <td>asMap</td>
- * <td>{key -> 自分自身}</td>
- * <td>{key1 -> node1, ..., keyN -> nodeN}</td>
- * <td>空マップ</td>
- * <td>空マップ</td>
- * <td>keyが"@"開始ならば属性、以外なら子ノード</td>
- * </tr>
- * <td>asXXX() (XXXは型)</td>
+ * <td>asTYPE()</td>
  * <td>葉ノードのみ値、それ以外はエラー</td>
  * <td>最初のノードが葉ノードのみ値、それ以外はエラー</td>
  * <td>値</td>
  * <td>エラー</td>
  * <td>変換出来ない場合はエラー</td> </tr>
  * <tr>
- * <td>asXXX(T nullHack) (XXXは型)</td>
+ * <td>asTYPE(T nullHack)</td>
  * <td>葉ノードのみ値、それ以外はnullHack</td>
  * <td>最初のノードが葉ノードのみ値、それ以外はnullHack</td>
  * <td>値</td>
@@ -95,60 +78,90 @@ import com.splendidvenus.xml.query.QueryParser;
  */
 public abstract class XML implements Iterable<XML> {
 	/**
-	 * ノードタイプ
-	 * 
-	 * @author weihe
+	 * node type
 	 */
 	public enum NodeType {
 		/**
-		 * エレメント
+		 * element
 		 */
 		ELEMENT,
 		/**
-		 * エレメントのリスト
+		 * list of element
 		 */
 		ELEMENT_LIST,
 		/**
-		 * 属性
+		 * attribute
 		 */
 		ATTRITUBE,
 		/**
-		 * nullの特別値
+		 * special value for null
 		 */
 		NULL
 	}
 
-	public static final XML NULL = new NullValue();
+	/**
+	 * special value for NULL node.
+	 */
+	public static final XML NULL = new XMLNull();
 
 	private NodeType nodeType;
 
 	private static final String NULL_HACK_STRING = "(null-hack)$";
 
+	/**
+	 * Parse XML Document from InputStream
+	 * @param is input stream to parse
+	 * @return the root node of given XML
+	 * @throws IOException when I/O Exception occurred
+	 */
 	public static XML parse(InputStream is) throws IOException {
 		return new XMLParser().parse(new XMLLexer().lex(is));
 	}
 
+	/**
+	 * Parse XML Document from file
+	 * @param file xml file to parse
+	 * @return the root node of given XML
+	 * @throws IOException when I/O Exception occurred
+	 */
 	public static XML parse(File file) throws IOException {
 		return new XMLParser().parse(new XMLLexer().lex(file));
 	}
 
+	/**
+	 * Parse XML Document from String
+	 * @param xmlString xml String
+	 * @return the root node of given XML
+	 */
 	public static XML parse(String xmlString) {
 		return new XMLParser().parse(new XMLLexer().lex(xmlString));
 	}
 
+	/**
+	 * [internal use]
+	 * 
+	 * @param nodeType
+	 */
 	XML(NodeType nodeType) {
 		this.nodeType = nodeType;
 	}
 
+	/**
+	 * Get the node's type
+	 * @return the node's type
+	 */
 	public NodeType getNodeType() {
 		return nodeType;
 	}
 
+	/**
+	 * Get the node's name
+	 * @return the node's name
+	 */
 	public abstract String getNodeName();
 
 	/**
-	 * nullかどうか
-	 * 
+	 * check if is null
 	 * @return true: if it is null Node
 	 */
 	public boolean isNull() {
@@ -218,26 +231,6 @@ public abstract class XML implements Iterable<XML> {
 
 	public List<XML> children() {
 		return Collections.emptyList();
-	}
-
-	/**
-	 * ELEMENT_LISTのみ有用
-	 * 
-	 * <pre>
-	 * &lt;names&gt;
-	 *   &lt;name lang="ja"&gt;雲&lt;/name&gt;
-	 *   &lt;name lang="en"&gt;cloud&lt;/name&gt;
-	 * &lt;/names&gt;
-	 * </pre>
-	 * 
-	 * を変換すると
-	 * {"ja" -> "雲", "en" -> "cloud"}
-	 * 
-	 * @param key
-	 * @return key-to-value Map
-	 */
-	public Map<String, XML> asMap(String key) {
-		throw new UnsupportedOperationException();
 	}
 
 	public String asString() {
@@ -402,31 +395,4 @@ public abstract class XML implements Iterable<XML> {
 	}
 
 	protected abstract String getValue();
-
-	private static class NullValue extends XML {
-
-		public NullValue() {
-			super(NodeType.NULL);
-		}
-
-		@Override
-		public int length() {
-			return 0;
-		}
-
-		@Override
-		public String toString() {
-			return "(null)";
-		}
-
-		@Override
-		protected String getValue() {
-			return null;
-		}
-
-		@Override
-		public String getNodeName() {
-			return null;
-		}
-	}
 }

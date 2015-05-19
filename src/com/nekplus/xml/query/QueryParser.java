@@ -1,10 +1,10 @@
-package com.splendidvenus.xml.query;
+package com.nekplus.xml.query;
 
-import com.splendidvenus.xml.XML;
-import com.splendidvenus.xml.filters.CompareFilter;
-import com.splendidvenus.xml.filters.XMLFilter;
-import com.splendidvenus.xml.query.QueryLexer.Token;
-import com.splendidvenus.xml.query.QueryLexer.TokenType;
+import com.nekplus.xml.XML;
+import com.nekplus.xml.filters.CompareFilter;
+import com.nekplus.xml.filters.XMLFilter;
+import com.nekplus.xml.query.QueryLexer.Token;
+import com.nekplus.xml.query.QueryLexer.TokenType;
 
 public class QueryParser {
 

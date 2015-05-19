@@ -1,4 +1,4 @@
-package com.splendidvenus.xml;
+package com.nekplus.xml;
 
 import java.io.ByteArrayInputStream;
 
@@ -11,7 +11,7 @@ import org.junit.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import com.splendidvenus.xml.XML;
+import com.nekplus.xml.XML;
 
 public class DOMTest {
 

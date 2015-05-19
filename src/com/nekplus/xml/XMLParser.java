@@ -1,10 +1,10 @@
-package com.splendidvenus.xml;
+package com.nekplus.xml;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import com.splendidvenus.xml.EventNode.TokenType;
+import com.nekplus.xml.EventNode.TokenType;
 
 class XMLParser {
 

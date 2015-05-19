@@ -1,4 +1,4 @@
-package com.splendidvenus.xml;
+package com.nekplus.xml;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -53,11 +53,6 @@ class XMLElement extends XML {
 	@Override
 	public boolean has(String qname) {
 		return get(qname) != NULL;
-	}
-
-	@Override
-	public Map<String, XML> asMap(String key) {
-		return Collections.<String, XML> singletonMap(get(key).asString(""), this);
 	}
 
 	@Override

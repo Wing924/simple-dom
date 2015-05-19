@@ -1,4 +1,4 @@
-package com.splendidvenus.xml.query;
+package com.nekplus.xml.query;
 
 class CharSegment implements CharSequence {
 

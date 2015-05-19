@@ -1,4 +1,4 @@
-package com.splendidvenus.xml.query;
+package com.nekplus.xml.query;
 
 import java.util.ArrayList;
 import java.util.List;

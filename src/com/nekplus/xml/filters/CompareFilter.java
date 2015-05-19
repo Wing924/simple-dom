@@ -1,6 +1,6 @@
-package com.splendidvenus.xml.filters;
+package com.nekplus.xml.filters;
 
-import com.splendidvenus.xml.XML;
+import com.nekplus.xml.XML;
 
 public class CompareFilter implements XMLFilter {
 

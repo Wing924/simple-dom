@@ -18,8 +18,13 @@ Features
 =========
 
 * simple, simple is the best
-* fast to parse XML.
+* fast to parsing XML.
 * easy to get nodes' values
+
+Requirements & Dependencies
+==========
+* Require JDK 1.6+
+* Require SAX (org.xml.sax) Library
 
 Simple XML format
 ==========
